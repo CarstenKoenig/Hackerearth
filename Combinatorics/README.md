@@ -1,5 +1,3 @@
-{- | 
-
 # [Combinatorics](http://www.hackerearth.com/problem/algorithm/combinatorics/)
 
 ## Description
@@ -20,36 +18,3 @@ Now if there is a character c more than one (say n) times in the text we can rea
 without changing the real count.
 The idea is now to compress the text into a "signature": "HALLO" -> [(1,'H'), (1, 'A'), (2, 'L'), (1, 'O')]
 and use this to divide through the product of each possible character rearrangement
-
--}
-
-module Main where
-
-import Control.Monad (forM_)
-import Data.List (sort)
-
-main :: IO ()
-main = do
-    count <- readLn :: IO Int
-    forM_ [1..count] processCase
-
-processCase :: a -> IO ()
-processCase _ = do
-    text <- getLine
-    putStrLn . show $ nrOfRearrangements text
-
-nrOfRearrangements :: String -> Integer
-nrOfRearrangements text = totalRear `div` identRear
-    where totalRear = fact (fromIntegral . length $ text)
-          identRear = product [ fact s | (s, _) <- signature text, s > 1 ]
-
-signature :: Ord a => [a] -> [(Integer, a)]
-signature as = col (sort as) []
-    where col [] acc    = acc
-          col (c:cs) [] = col cs [(1, c)]
-          col (c:cs) ((n,c'):acc)
-            | c == c'   = col cs ((n+1,c):acc)
-            | otherwise = col cs ((1, c):(n,c'):acc)
-
-fact :: Integer -> Integer
-fact n = product [1..n]
