@@ -16,11 +16,26 @@ For each test case output a single integer, that is minimum cost required to pai
 1 <= K <= 512
 0 <= a < b <= L
 1 <= c <= 1000
+
+## Strategy
+I think the best bet is to go dynamic programming.
+So crunch out an array where the the entry `arr[(i,j)]` will stand for the minimum cost of painting the road till length `j` if you only use the first `i` probosals.
 -}
 
 module Main where
 
-import Control.Monad (forM_)
+import Control.Monad (forM_, forM)
+import Control.Applicative ((<$>))
+import Data.Array
+
+type Cost     = Int
+type Distance = Int
+
+data Proposal = Prop 
+  { fromCoord :: Distance
+  , toCoord   :: Distance
+  , cost      :: Cost 
+  }
 
 main :: IO ()
 main = do
@@ -29,5 +44,35 @@ main = do
 
 processCase :: a -> IO ()
 processCase _ = do
-    text <- getLine
-    putStrLn . show $ "I have no clue yet"
+    (roadLen, nrProp) <- readParams
+    proposals <- forM [1..nrProp] readProposal
+    let minCost = calculateCost roadLen proposals
+    putStrLn . showCost $ minCost
+    where readParams = do
+            (l:n:_) <- map read . words <$> getLine
+            return (l,n)
+          readProposal _ = do
+            (a:b:c:_) <- map read . words <$> getLine
+            return $ Prop a b c
+          showCost Nothing   = "-1"
+          showCost (Just c)  = show c
+
+calculateCost :: Distance -> [Proposal] -> Maybe Cost
+calculateCost roadLen proposals = get count roadLen
+    where arr                   = array ((1,0), (count, roadLen)) [((i,j), choose i j) | i <- [1..count], j <- [0..roadLen]]
+          probs                 = array (1, count) [(i, proposals !! (i-1)) | i <- [1..count]]
+          count                 = length proposals
+          prob i                = probs!i
+          get i j
+            | j == 0            = Just 0
+            | i < 1             = Nothing
+            | otherwise         = arr!(i,j)
+          choose i j
+            | j < f || j > t    = get (i-1) j
+            | otherwise         =
+                case (get (i-1) j, get (i-1) f) of
+                  (Nothing, Nothing) -> Nothing
+                  (Nothing, Just b)  -> Just $ b + c
+                  (Just a, Nothing)  -> Just a
+                  (Just a, Just b)   -> Just $ min a (b + c)
+            where (Prop f t c)  = prob i
