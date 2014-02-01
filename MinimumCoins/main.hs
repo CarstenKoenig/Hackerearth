@@ -56,8 +56,8 @@ solveProblem (Problem am rs) = Solution . snd <$> get am rupeeCount
                                      else Just (addTo sb)
 
 printSolution :: Maybe Solution -> IO ()
-printSolution (Just sol) = putStrLn . show $ sol
+printSolution (Just sol) = putStr . show $ sol
 printSolution Nothing    = putStrLn "not solvable"
 
 instance Show Solution where
-  show (Solution ss) = unlines . map (\(r,n) -> "Rupee " ++ show r ++ " coin " ++ show n) $ ss
+  show (Solution ss) = unlines . map (\(r,n) -> "Rupee " ++ show r ++ " coin " ++ show n) . reverse $ ss
