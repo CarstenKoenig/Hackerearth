@@ -20,6 +20,7 @@ For each test case output a single integer, that is minimum cost required to pai
 ## Strategy
 I think the best bet is to go dynamic programming.
 So crunch out an array where the the entry `arr[(i,j)]` will stand for the minimum cost of painting the road till length `j` if you only use the first `i` probosals.
+For this to work it's important that the Proposals are sorted on the toCoord, as we start at roads end and work our way backwards, we can never revisit proposals further along the way once we rejected them - so we have to consider those first.
 -}
 
 module Main where
@@ -27,6 +28,8 @@ module Main where
 import Control.Monad (forM_, forM)
 import Control.Applicative ((<$>))
 import Data.Array
+import Data.Function (on)
+import Data.List (sortBy)
 
 type Cost     = Int
 type Distance = Int
@@ -60,7 +63,8 @@ processCase _ = do
 calculateCost :: Distance -> [Proposal] -> Maybe Cost
 calculateCost roadLen proposals = get count roadLen
     where arr                   = array ((1,0), (count, roadLen)) [((i,j), choose i j) | i <- [1..count], j <- [0..roadLen]]
-          probs                 = array (1, count) [(i, proposals !! (i-1)) | i <- [1..count]]
+          sorted                = sortBy (compare `on` toCoord) proposals
+          probs                 = array (1, count) [(i, sorted !! (i-1)) | i <- [1..count]]
           count                 = length proposals
           prob i                = probs!i
           get i j
